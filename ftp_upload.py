@@ -26,6 +26,7 @@ logger.addHandler(handler)
 upload_successed = 0
 upload_failed = 0
 upload_exist = 0
+file_del = 0
 
 
 def __ftp_upload(ftp, local, remote, is_del=False):
@@ -43,46 +44,60 @@ def __ftp_upload(ftp, local, remote, is_del=False):
                 logging.info("[上传本地目录]:" + local + f)
                 __ftp_upload(ftp, local + f + '/', remote + f + '/', is_del)
             else:
-                logging.info("[本地文件]:" + local + f)
-                logging.info("[远程文件]:" + remote + f)
-                fp = open(local + f, 'rb')
-                is_updated = False
-                if not __check_file_exist(ftp, remote + f):
-                    try:
-                        ret = ftp.storbinary('STOR ' + remote + f, fp, 4096)
-                        server_size = ftp.size(remote + f)
-                        local_size = os.path.getsize(local + f)
-                        logging.info("server_size=" + str(server_size) + ", local_size=" + str(local_size))
-                        logging.info("ret=" + ret)
-                        if ret is not None and ret.startswith("226") and local_size == server_size:
-                            logging.info("[上传文件成功]:" + ret)
-                            is_updated = True
-                            upload_successed += 1
-                    except Exception as e:
-                        logging.error("上传文件失败, " + local + f)
-                        logging.error(e)
-                        logging.exception(e)
-                        upload_failed += 1
-                    fp.close()
-                    if is_del and is_updated:
-                        logging.info("[待删除本地文件]: " + local + f)
-                        # os.remove(local + f)
-
-                else:
-                    upload_exist += 1
-                    logging.warn("[远程文件以已经存在，无需上传]: " + remote + f)
+                try:
+                    __do_upload_file(f, ftp, is_del, local, remote)
+                except Exception as e:
+                    logging.error("上传文件失败, " + local + f)
+                    logging.error(e)
+                    logging.exception(e)
+                    upload_failed += 1
     else:
         logging.error("配置有误." + local + "不是一个目录")
 
 
-def __check_file_exist(ftp, remote_file):
+def __do_upload_file(f, ftp, is_del, local, remote):
+    global upload_successed, upload_failed, file_del
+    logging.info("[本地文件]:" + local + f)
+    logging.info("[远程文件]:" + remote + f)
+    fp = open(local + f, 'rb')
+    if __check_need_to_upload(ftp, local + f, remote + f):
+        try:
+            ret = ftp.storbinary('STOR ' + remote + f, fp, 4096)
+            server_size = ftp.size(remote + f)
+            local_size = os.path.getsize(local + f)
+            logging.info("server_size=" + str(server_size) + ", local_size=" + str(local_size))
+            logging.info("ret=" + ret)
+            if ret is not None and ret.startswith("226") and local_size == server_size:
+                logging.info("[上传文件成功]:" + ret)
+                upload_successed += 1
+        except Exception as e:
+            logging.error("上传文件失败, " + local + f)
+            logging.error(e)
+            logging.exception(e)
+            upload_failed += 1
+        fp.close()
+    else:
+        # 服务端文件已经存在，判断判断是否需要删除。
+        logging.warn("[远程文件以已经存在，无需上传]: " + remote + f)
+        # 文件存在时间
+        file_exist_time = long(time.time()) - long(os.path.getsize(local + f))
+        # 文件存在时间超过7天进行删除。
+        if is_del and file_exist_time > 3600 * 24 * 7:
+            logging.info("删除本地文件:" + local + f)
+            # os.remove(local + f)
+            file_del += 1
+
+
+def __check_need_to_upload(ftp, local_file, remote_file):
     try:
+        local_size = os.path.getsize(local_file)
         r_files = ftp.size(remote_file)
-        if r_files >= 0:
-            return True
+        if r_files >= local_size:
+            # 当服务端文件比本地大的时候，不需要上传。其他情况都上传
+            return False
     except :
         pass
-    return False
+    return True
 
 
 def ftp_upload(host, port, username, password, local, remote, is_del=False):
@@ -121,4 +136,5 @@ if __name__ == '__main__':
     logging.info("上传成功文件数:" + str(upload_successed))
     logging.info("上传失败文件数:" + str(upload_failed))
     logging.info("已经存在文件数:" + str(upload_exist))
+    logging.info("本次删除文件数:" + str(file_del))
     logging.info("结束程序")
