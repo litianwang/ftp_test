@@ -4,24 +4,12 @@ import logging
 import os
 import time
 from ftplib import FTP
-from logging.handlers import TimedRotatingFileHandler
 from upload_conf import ftp_param, upload_params
 import sys
 
 if sys.getdefaultencoding() != 'utf-8':
     reload(sys)
     sys.setdefaultencoding('utf-8')
-
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-if not os.path.exists("logs"):
-    os.mkdir("logs")
-handler = TimedRotatingFileHandler(filename="logs/upload.log",
-                                   when="d",
-                                   interval=1,
-                                   backupCount=90)
-handler.setFormatter(logging.Formatter('%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s - %(message)s'))
-logger.addHandler(handler)
 
 upload_successed = 0
 upload_failed = 0

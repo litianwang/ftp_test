@@ -1,7 +1,24 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
+import logging
+import os
 from xml.dom.minidom import parse
+from logging.handlers import TimedRotatingFileHandler
+import sys
+if sys.getdefaultencoding() != 'utf-8':
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+if not os.path.exists("logs"):
+    os.mkdir("logs")
+handler = TimedRotatingFileHandler(filename="logs/upload.log",
+                                   when="d",
+                                   interval=1,
+                                   backupCount=90)
+handler.setFormatter(logging.Formatter('%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s - %(message)s'))
+logger.addHandler(handler)
 
 ftp_param = {}
 upload_params = []
@@ -18,7 +35,15 @@ transforms = document.getElementsByTagName("transforms")[0].getElementsByTagName
 for tran in transforms:
     tran_dist = {"local_dir": tran.getElementsByTagName("local")[0].childNodes[0].data,
                  "server_dir": tran.getElementsByTagName("server")[0].childNodes[0].data}
-    upload_params.append(tran_dist)
+    if tran_dist["local_dir"].endswith("\\") or tran_dist["local_dir"].endswith("/"):
+        if tran_dist["server_dir"].endswith("\\") or tran_dist["server_dir"].endswith("/"):
+            upload_params.append(tran_dist)
+        else:
+            logging.error("server_dir 必须/结尾。")
+            sys.exit()
+    else:
+        logging.error("local_dir 必须\\结尾，或/结尾。")
+        sys.exit()
 
 
 # # 文件服务器参数
