@@ -72,7 +72,7 @@ def __do_upload_file(f, ftp, is_del, local, remote):
         # 文件存在时间超过7天进行删除。
         if is_del and file_exist_time > 3600 * 24 * 7:
             logging.info("删除本地文件:" + local + f)
-            # os.remove(local + f)
+            os.remove(local + f)
             file_del += 1
 
 
