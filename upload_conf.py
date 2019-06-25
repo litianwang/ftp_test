@@ -34,7 +34,9 @@ ftp_param["pwd"] = ftp_server.getElementsByTagName("password")[0].childNodes[0].
 transforms = document.getElementsByTagName("transforms")[0].getElementsByTagName("transform")
 for tran in transforms:
     tran_dist = {"local_dir": tran.getElementsByTagName("local")[0].childNodes[0].data,
-                 "server_dir": tran.getElementsByTagName("server")[0].childNodes[0].data}
+                 "server_dir": tran.getElementsByTagName("server")[0].childNodes[0].data,
+                 "delete_local_file": tran.getElementsByTagName("delete_local_file")[0].childNodes[0].data == "true"
+                 }
     if tran_dist["local_dir"].endswith("\\") or tran_dist["local_dir"].endswith("/"):
         if tran_dist["server_dir"].endswith("\\") or tran_dist["server_dir"].endswith("/"):
             upload_params.append(tran_dist)

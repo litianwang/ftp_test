@@ -11,14 +11,14 @@ if sys.getdefaultencoding() != 'utf-8':
     reload(sys)
     sys.setdefaultencoding('utf-8')
 
-upload_successed = 0
+upload_success = 0
 upload_failed = 0
 upload_exist = 0
 file_del = 0
 
 
 def __ftp_upload(ftp, local, remote, is_del=False):
-    global upload_successed
+    global upload_success
     global upload_failed
     global upload_exist
     if os.path.isdir(local):
@@ -44,7 +44,7 @@ def __ftp_upload(ftp, local, remote, is_del=False):
 
 
 def __do_upload_file(f, ftp, is_del, local, remote):
-    global upload_successed, upload_failed, file_del
+    global upload_success, upload_failed, file_del
     logging.info("[本地文件]:" + local + f)
     logging.info("[远程文件]:" + remote + f)
     fp = open(local + f, 'rb')
@@ -57,7 +57,7 @@ def __do_upload_file(f, ftp, is_del, local, remote):
             logging.info("ret=" + ret)
             if ret is not None and ret.startswith("226") and local_size == server_size:
                 logging.info("[上传文件成功]:" + ret)
-                upload_successed += 1
+                upload_success += 1
         except Exception as e:
             logging.error("上传文件失败, " + local + f)
             logging.error(e)
@@ -112,16 +112,19 @@ if __name__ == '__main__':
     logging.info("=============================================================")
     logging.info("启动程序")
     for info in upload_params:
-        logging.info("开始上传,本地目录 = " + info['local_dir'] + ", 远程目录 = " + info['server_dir'])
+        logging.info("开始上传,本地目录 = {}, 远程目录 = {}, 是否删除本地文件={}".format(
+            info['local_dir'],
+            info['server_dir'],
+            info['delete_local_file']))
         ftp_upload(ftp_param['host'],
                    ftp_param['port'],
                    ftp_param['user'],
                    ftp_param['pwd'],
                    info['local_dir'],
                    info['server_dir'],
-                   True)
+                   info['delete_local_file'])
         logging.info("----------------------分割线-------------------------------")
-    logging.info("上传成功文件数:" + str(upload_successed))
+    logging.info("上传成功文件数:" + str(upload_success))
     logging.info("上传失败文件数:" + str(upload_failed))
     logging.info("已经存在文件数:" + str(upload_exist))
     logging.info("本次删除文件数:" + str(file_del))
