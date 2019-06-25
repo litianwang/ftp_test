@@ -47,8 +47,8 @@ def __do_upload_file(f, ftp, is_del, local, remote):
     global upload_success, upload_failed, file_del
     logging.info("[本地文件]:" + local + f)
     logging.info("[远程文件]:" + remote + f)
-    fp = open(local + f, 'rb')
     if __check_need_to_upload(ftp, local + f, remote + f):
+        fp = open(local + f, 'rb')
         try:
             ret = ftp.storbinary('STOR ' + remote + f, fp, 4096)
             server_size = ftp.size(remote + f)
