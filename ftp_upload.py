@@ -18,6 +18,7 @@ file_del = 0
 
 
 def __ftp_upload(ftp, local, remote, is_del=False):
+    print ".",
     global upload_success
     global upload_failed
     global upload_exist
@@ -44,6 +45,7 @@ def __ftp_upload(ftp, local, remote, is_del=False):
 
 
 def __do_upload_file(f, ftp, is_del, local, remote):
+    print ".",
     global upload_success, upload_failed, file_del
     logging.info("[本地文件]:" + local + f)
     logging.info("[远程文件]:" + remote + f)
@@ -77,6 +79,7 @@ def __do_upload_file(f, ftp, is_del, local, remote):
 
 
 def __check_need_to_upload(ftp, local_file, remote_file):
+    print ".",
     try:
         local_size = os.path.getsize(local_file)
         r_files = ftp.size(remote_file)
@@ -89,6 +92,7 @@ def __check_need_to_upload(ftp, local_file, remote_file):
 
 
 def ftp_upload(host, port, username, password, local, remote, is_del=False):
+    print ".",
     ftp = FTP()
     try:
         ftp.connect(host, port)
@@ -109,9 +113,13 @@ def ftp_upload(host, port, username, password, local, remote, is_del=False):
 
 
 if __name__ == '__main__':
+    print u"* 正在上传课程录像... 请不要关闭这个窗口。上传完成会自动关闭。"
+    print u"* Uploading recording files... please don't close it. It will close itself when upload is done."
+    print ".",
     logging.info("=============================================================")
     logging.info("启动程序")
     for info in upload_params:
+        print ".",
         logging.info("开始上传,本地目录 = {}, 远程目录 = {}, 是否删除本地文件={}".format(
             info['local_dir'],
             info['server_dir'],
@@ -129,3 +137,4 @@ if __name__ == '__main__':
     logging.info("已经存在文件数:" + str(upload_exist))
     logging.info("本次删除文件数:" + str(file_del))
     logging.info("结束程序")
+
