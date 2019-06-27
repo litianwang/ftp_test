@@ -113,8 +113,8 @@ def ftp_upload(host, port, username, password, local, remote, is_del=False):
 
 
 if __name__ == '__main__':
-    print u"* 正在上传课程录像... 请不要关闭这个窗口。上传完成会自动关闭。"
-    print u"* Uploading recording files... please don't close it. It will close itself when upload is done."
+    print "* 正在上传课程录像... 请不要关闭这个窗口。上传完成会自动关闭。"
+    print "* Uploading recording files... please don't close it. It will close itself when upload is done."
     print ".",
     logging.info("=============================================================")
     logging.info("启动程序")
